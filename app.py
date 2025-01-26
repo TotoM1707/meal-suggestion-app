@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 # Load the data
-file_path = 'LEMME_Chat_Translated_Manual_DE.xlsx'
+file_path = 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx'
 if not os.path.exists(file_path):
     st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
     st.stop()
@@ -29,6 +29,10 @@ if data.empty:
 data['Frühstück'] = data['Frühstück'].astype(str).str.strip().str.lower()
 data['Mittag'] = data['Mittag'].astype(str).str.strip()
 data['Abend'] = data['Abend'].astype(str).str.strip()
+
+# Debug: Display data for verification
+st.write("Originaldaten aus der Tabelle:")
+st.dataframe(data)
 
 # Streamlit App
 def main():
