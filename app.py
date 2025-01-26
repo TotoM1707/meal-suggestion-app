@@ -79,8 +79,13 @@ def main():
                 'Abend': dinner
             }
 
-    st.write("## Dein Wochenplan")
-    st.write(weekly_plan)
+    if st.button("Wochenplan anzeigen"):
+        st.write("## Dein Wochenplan (Druckversion)")
+        for day, meals in weekly_plan.items():
+            st.write(f"### {day}")
+            st.write(f"- **Frühstück:** {meals['Frühstück']}")
+            st.write(f"- **Mittag:** {meals['Mittag']}")
+            st.write(f"- **Abend:** {meals['Abend']}")
 
     # Einkaufsliste generieren
     st.write("## Einkaufsliste")
