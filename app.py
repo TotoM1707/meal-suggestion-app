@@ -56,13 +56,6 @@ def main():
             # Abendessen
             selected_dinner = st.selectbox(f"Abendessen für {day} (dynamisch angepasst):", matching_dinner_from_breakfast_lunch, key=f"dinner_{day}")
 
-            # Dynamische Rückanpassung basierend auf Abendessen
-            matching_lunch_from_dinner = data[data['Abend'] == selected_dinner]['Mittag'].unique()
-            matching_breakfast_from_lunch_dinner = data[(data['Mittag'].isin(matching_lunch_from_dinner)) & (data['Abend'] == selected_dinner)]['Frühstück'].unique()
-
-            # Frühstück basierend auf Abendessen und Mittagessen aktualisieren
-            selected_breakfast = st.selectbox(f"Frühstück (aktualisiert nach Abendessen und Mittag):", matching_breakfast_from_lunch_dinner, key=f"breakfast_updated_{day}")
-
             weekly_plan[day] = {
                 'Frühstück': selected_breakfast,
                 'Mittag': selected_lunch,
