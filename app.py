@@ -33,57 +33,6 @@ data['Abend'] = data['Abend'].astype(str).str.strip()
 # Streamlit App
 def main():
     st.title("Mahlzeit-Empfehlungen mit Wochenplan und Einkaufsliste")
-    st.write("Wähle ein Frühstück, Mittag oder Abend aus, um die fehlenden Mahlzeiten anzuzeigen und einen Wochenplan zu erstellen.")
-
-    # Auswahloptionen
-    search_category = st.radio("Wähle die Kategorie für die Suche:", ("Frühstück", "Mittag", "Abend"))
-    search_query = st.text_input(f"Suche nach {search_category}-Optionen:").strip().lower()
-
-    if search_category == "Frühstück":
-        filtered_options = data[data['Frühstück'].str.contains(search_query, na=False)]['Frühstück'].unique() if search_query else data['Frühstück'].unique()
-    elif search_category == "Mittag":
-        filtered_options = data[data['Mittag'].str.contains(search_query, na=False)]['Mittag'].unique() if search_query else data['Mittag'].unique()
-    elif search_category == "Abend":
-        filtered_options = data[data['Abend'].str.contains(search_query, na=False)]['Abend'].unique() if search_query else data['Abend'].unique()
-
-    options = sorted(filtered_options)
-    if not options:
-        st.error(f"Keine passenden {search_category}-Optionen gefunden. Bitte ändern Sie Ihre Suche.")
-        return
-
-    selected_option = st.selectbox(f"Wähle dein {search_category}:", options)
-
-    # Filter und fehlende Mahlzeiten anzeigen
-    if selected_option:
-        st.write(f"Gewähltes {search_category}: {selected_option}")  # Debugging-Ausgabe
-
-        if search_category == "Frühstück":
-            matching_meals = data[data['Frühstück'] == selected_option]
-        elif search_category == "Mittag":
-            matching_meals = data[data['Mittag'] == selected_option]
-        elif search_category == "Abend":
-            matching_meals = data[data['Abend'] == selected_option]
-
-        if not matching_meals.empty:
-            breakfast_options = matching_meals['Frühstück'].unique()
-            lunch_options = matching_meals['Mittag'].unique()
-            dinner_options = matching_meals['Abend'].unique()
-
-            st.write("### Passende Mahlzeiten:")
-            if search_category != "Frühstück":
-                st.write("**Frühstücksoptionen:**")
-                for breakfast in breakfast_options:
-                    st.write(f"- {breakfast}")
-
-            if search_category != "Mittag":
-                st.write("**Mittagsoptionen:**")
-                for lunch in lunch_options:
-                    st.write(f"- {lunch}")
-
-            if search_category != "Abend":
-                st.write("**Abendoptionen:**")
-                for dinner in dinner_options:
-                    st.write(f"- {dinner}")
 
     # Wochenplan erstellen mit Tabs
     st.write("## Wochenplan erstellen")
