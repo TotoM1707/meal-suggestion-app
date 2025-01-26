@@ -3,13 +3,18 @@ import pandas as pd
 import os
 
 # Load the data
-file_path = 'LEMME_Chat_Translated_Manual_DE.xlsx'
+file_path = 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx'
 if not os.path.exists(file_path):
     st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
     st.stop()
 
 try:
+    # Ensure openpyxl is available
+    import openpyxl
     data = pd.read_excel(file_path, sheet_name='Sheet1')
+except ImportError:
+    st.error("Fehlende Abhängigkeit: 'openpyxl'. Installieren Sie es mit 'pip install openpyxl'.")
+    st.stop()
 except Exception as e:
     st.error(f"Fehler beim Laden der Datei: {e}")
     st.stop()
@@ -31,10 +36,16 @@ def main():
     st.write("Wähle ein Frühstück aus, um passende Gerichte für Mittag und Abend anzuzeigen.")
 
     # Frühstücksauswahl
-    breakfast_options = sorted(data['Frühstück'].unique())
+    search_query = st.text_input("Suche nach Frühstücksoptionen:").strip().lower()
+    if search_query:
+        filtered_options = data[data['Frühstück'].str.contains(search_query, na=False)]['Frühstück'].unique()
+    else:
+        filtered_options = data['Frühstück'].unique()
+
+    breakfast_options = sorted(filtered_options)
     if not breakfast_options:
-        st.error("Keine Frühstücksoptionen gefunden. Bitte überprüfen Sie die Daten im Excel-Dokument.")
-        st.stop()
+        st.error("Keine passenden Frühstücksoptionen gefunden. Bitte ändern Sie Ihre Suche.")
+        return
 
     selected_breakfast = st.selectbox("Wähle dein Frühstück:", breakfast_options)
 
@@ -44,12 +55,17 @@ def main():
         matching_meals = data[data['Frühstück'] == selected_breakfast]
 
         if not matching_meals.empty:
-            lunch = matching_meals['Mittag'].values[0]
-            dinner = matching_meals['Abend'].values[0]
+            lunch_options = matching_meals['Mittag'].unique()
+            dinner_options = matching_meals['Abend'].unique()
 
             st.write("### Passende Mahlzeiten:")
-            st.write(f"**Mittag:** {lunch}")
-            st.write(f"**Abend:** {dinner}")
+            st.write("**Mittagsoptionen:**")
+            for lunch in lunch_options:
+                st.write(f"- {lunch}")
+
+            st.write("**Abendoptionen:**")
+            for dinner in dinner_options:
+                st.write(f"- {dinner}")
         else:
             st.write("Keine passenden Mahlzeiten gefunden. Bitte überprüfen Sie die Eingabedaten.")
 
