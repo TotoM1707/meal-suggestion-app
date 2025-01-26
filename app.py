@@ -44,21 +44,23 @@ def main():
                               (data['Abend'].str.contains(search_query, na=False))]
         if not search_results.empty:
             st.write("### Suchergebnisse:")
-            st.dataframe(search_results)
-
-            # Filtered options for selection
             filtered_breakfast = search_results['Frühstück'].unique()
             filtered_lunch = search_results['Mittag'].unique()
             filtered_dinner = search_results['Abend'].unique()
+
+            st.write("**Frühstück:**")
+            for item in filtered_breakfast:
+                st.write(f"- {item}")
+
+            st.write("**Mittag:**")
+            for item in filtered_lunch:
+                st.write(f"- {item}")
+
+            st.write("**Abend:**")
+            for item in filtered_dinner:
+                st.write(f"- {item}")
         else:
             st.warning("Keine Ergebnisse gefunden.")
-            filtered_breakfast = data['Frühstück'].unique()
-            filtered_lunch = data['Mittag'].unique()
-            filtered_dinner = data['Abend'].unique()
-    else:
-        filtered_breakfast = data['Frühstück'].unique()
-        filtered_lunch = data['Mittag'].unique()
-        filtered_dinner = data['Abend'].unique()
 
     # Wochenplan erstellen mit Tabs
     st.write("## Wochenplan erstellen")
@@ -82,16 +84,16 @@ def main():
             st.write(f"### {day}")
 
             # Auswahl für Frühstück
-            breakfast = st.selectbox(f"Frühstück für {day}", filtered_breakfast, key=f"breakfast_{day}")
+            breakfast = st.selectbox(f"Frühstück für {day}", data['Frühstück'].unique(), key=f"breakfast_{day}")
             matching_lunch = data[data['Frühstück'] == breakfast]['Mittag'].unique()
             matching_dinner = data[data['Frühstück'] == breakfast]['Abend'].unique()
 
             # Auswahl für Mittagessen
-            lunch = st.selectbox(f"Mittagessen für {day}", matching_lunch if search_query else filtered_lunch, key=f"lunch_{day}")
+            lunch = st.selectbox(f"Mittagessen für {day}", matching_lunch, key=f"lunch_{day}")
             matching_dinner = data[(data['Frühstück'] == breakfast) & (data['Mittag'] == lunch)]['Abend'].unique()
 
             # Auswahl für Abendessen
-            dinner = st.selectbox(f"Abendessen für {day}", matching_dinner if search_query else filtered_dinner, key=f"dinner_{day}")
+            dinner = st.selectbox(f"Abendessen für {day}", matching_dinner, key=f"dinner_{day}")
 
             weekly_plan[day] = {
                 'Frühstück': breakfast,
