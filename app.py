@@ -34,6 +34,20 @@ data['Abend'] = data['Abend'].astype(str).str.strip()
 def main():
     st.title("Mahlzeit-Empfehlungen mit Wochenplan und Einkaufsliste")
 
+    # Suchfunktion hinzufügen
+    st.write("## Suche nach Mahlzeiten")
+    search_query = st.text_input("Gib einen Suchbegriff ein (z. B. Frühstück, Mittag, Abend):").strip().lower()
+
+    if search_query:
+        search_results = data[(data['Frühstück'].str.contains(search_query, na=False)) |
+                              (data['Mittag'].str.contains(search_query, na=False)) |
+                              (data['Abend'].str.contains(search_query, na=False))]
+        if not search_results.empty:
+            st.write("### Suchergebnisse:")
+            st.dataframe(search_results)
+        else:
+            st.warning("Keine Ergebnisse gefunden.")
+
     # Wochenplan erstellen mit Tabs
     st.write("## Wochenplan erstellen")
     days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
