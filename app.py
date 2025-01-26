@@ -48,6 +48,9 @@ def main():
 
     tabs = st.tabs(days)
 
+    # Mahlzeitzählung für Warnungen
+    all_selected_meals = []
+
     for day, tab in zip(days, tabs):
         with tab:
             st.write(f"### {day}")
@@ -86,6 +89,17 @@ def main():
                 'Abend': dinner
             }
 
+            # Sammeln der Mahlzeiten für Warnungen
+            all_selected_meals.extend([breakfast, lunch, dinner])
+
+            # Warnung, wenn eine Mahlzeit mehr als 2-mal ausgewählt wurde
+            meal_counts = pd.Series(all_selected_meals).value_counts()
+            repeated_meals = meal_counts[meal_counts > 2]
+            if not repeated_meals.empty:
+                st.warning("Folgende Mahlzeiten wurden mehr als 2-mal ausgewählt:")
+                for meal, count in repeated_meals.items():
+                    st.write(f"- {meal}: {count}x")
+
     if show_plan:
         st.write("## Dein Wochenplan (Druckversion)")
         for day, meals in weekly_plan.items():
@@ -96,11 +110,7 @@ def main():
 
     if show_list:
         st.write("## Einkaufsliste (Druckversion)")
-        all_meals = []
-        for day, meals in weekly_plan.items():
-            all_meals.extend(meals.values())
-
-        shopping_list = pd.Series(all_meals).value_counts()
+        shopping_list = pd.Series(all_selected_meals).value_counts()
         st.write("### Benötigte Zutaten:")
         for item, count in shopping_list.items():
             st.write(f"- {item} ({count}x)")
