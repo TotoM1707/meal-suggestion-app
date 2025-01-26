@@ -5,7 +5,7 @@ import os
 # Load the data
 file_path = 'LEMME_Chat_Translated_Manual_DE.xlsx'
 if not os.path.exists(file_path):
-    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
+    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
     st.stop()
 
 try:
@@ -55,15 +55,17 @@ def main():
         with tab:
             st.write(f"### {day}")
 
-            # Optionen für Frühstück, Mittag und Abend basierend auf der Tabelle filtern
-            filtered_breakfast = data[data['Frühstück'].isin(all_selected_meals)]['Frühstück'].unique() if all_selected_meals else data['Frühstück'].unique()
-            filtered_lunch = data[data['Mittag'].isin(all_selected_meals)]['Mittag'].unique() if all_selected_meals else data['Mittag'].unique()
-            filtered_dinner = data[data['Abend'].isin(all_selected_meals)]['Abend'].unique() if all_selected_meals else data['Abend'].unique()
+            # Auswahl für Frühstück
+            breakfast = st.selectbox(f"Frühstück für {day}", data['Frühstück'].unique(), key=f"breakfast_{day}")
+            matching_lunch = data[data['Frühstück'] == breakfast]['Mittag'].unique()
+            matching_dinner = data[data['Frühstück'] == breakfast]['Abend'].unique()
 
-            # Auswahl für Frühstück, Mittag und Abend
-            breakfast = st.selectbox(f"Frühstück für {day}", filtered_breakfast, key=f"breakfast_{day}")
-            lunch = st.selectbox(f"Mittagessen für {day}", filtered_lunch, key=f"lunch_{day}")
-            dinner = st.selectbox(f"Abendessen für {day}", filtered_dinner, key=f"dinner_{day}")
+            # Auswahl für Mittagessen
+            lunch = st.selectbox(f"Mittagessen für {day}", matching_lunch, key=f"lunch_{day}")
+            matching_dinner = data[(data['Frühstück'] == breakfast) & (data['Mittag'] == lunch)]['Abend'].unique()
+
+            # Auswahl für Abendessen
+            dinner = st.selectbox(f"Abendessen für {day}", matching_dinner, key=f"dinner_{day}")
 
             weekly_plan[day] = {
                 'Frühstück': breakfast,
