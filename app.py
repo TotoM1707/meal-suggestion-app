@@ -39,6 +39,13 @@ def main():
     days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
     weekly_plan = {}
 
+    # Buttons für Wochenplan und Einkaufsliste oben anzeigen
+    col1, col2 = st.columns(2)
+    with col1:
+        show_plan = st.button("Wochenplan anzeigen")
+    with col2:
+        show_list = st.button("Einkaufsliste anzeigen")
+
     tabs = st.tabs(days)
 
     for day, tab in zip(days, tabs):
@@ -79,28 +86,24 @@ def main():
                 'Abend': dinner
             }
 
-    # Buttons für Wochenplan und Einkaufsliste anzeigen
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Wochenplan anzeigen"):
-            st.write("## Dein Wochenplan (Druckversion)")
-            for day, meals in weekly_plan.items():
-                st.write(f"### {day}")
-                st.write(f"- **Frühstück:** {meals['Frühstück']}")
-                st.write(f"- **Mittag:** {meals['Mittag']}")
-                st.write(f"- **Abend:** {meals['Abend']}")
+    if show_plan:
+        st.write("## Dein Wochenplan (Druckversion)")
+        for day, meals in weekly_plan.items():
+            st.write(f"### {day}")
+            st.write(f"- **Frühstück:** {meals['Frühstück']}")
+            st.write(f"- **Mittag:** {meals['Mittag']}")
+            st.write(f"- **Abend:** {meals['Abend']}")
 
-    with col2:
-        if st.button("Einkaufsliste anzeigen"):
-            st.write("## Einkaufsliste (Druckversion)")
-            all_meals = []
-            for day, meals in weekly_plan.items():
-                all_meals.extend(meals.values())
+    if show_list:
+        st.write("## Einkaufsliste (Druckversion)")
+        all_meals = []
+        for day, meals in weekly_plan.items():
+            all_meals.extend(meals.values())
 
-            shopping_list = pd.Series(all_meals).value_counts()
-            st.write("### Benötigte Zutaten:")
-            for item, count in shopping_list.items():
-                st.write(f"- {item} ({count}x)")
+        shopping_list = pd.Series(all_meals).value_counts()
+        st.write("### Benötigte Zutaten:")
+        for item, count in shopping_list.items():
+            st.write(f"- {item} ({count}x)")
 
 if __name__ == "__main__":
     main()
