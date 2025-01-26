@@ -45,37 +45,19 @@ def main():
         with tab:
             st.write(f"### {day}")
 
-            # Kategorieauswahl und Suche
-            search_category = st.radio(f"Welche Kategorie möchtest du durchsuchen? ({day})", ("Frühstück", "Mittag", "Abend"), key=f"search_category_{day}")
-            search_query = st.text_input(f"Gib einen Suchbegriff für {search_category} ein ({day}):", key=f"search_query_{day}").strip().lower()
+            # Frühstücksauswahl
+            selected_breakfast = st.selectbox(f"Wähle ein Frühstück für {day}", data['Frühstück'].unique(), key=f"breakfast_{day}")
+            matching_lunch = data[data['Frühstück'] == selected_breakfast]['Mittag'].unique()
+            matching_dinner = data[data['Frühstück'] == selected_breakfast]['Abend'].unique()
 
-            if search_query:
-                if search_category == "Frühstück":
-                    search_results = data[data['Frühstück'].str.contains(search_query, na=False)]
-                elif search_category == "Mittag":
-                    search_results = data[data['Mittag'].str.contains(search_query, na=False)]
-                elif search_category == "Abend":
-                    search_results = data[data['Abend'].str.contains(search_query, na=False)]
-
-                if not search_results.empty:
-                    st.write("### Suchergebnisse:")
-                    matching_items = search_results[search_category].unique()
-                    selected_item = st.selectbox(f"Wähle ein {search_category} aus den Suchergebnissen ({day}):", matching_items, key=f"selected_{search_category}_{day}")
-
-                    if search_category == "Frühstück":
-                        st.write("### Passende Mittags- und Abendessen:")
-                        matching_lunch = search_results[search_results['Frühstück'] == selected_item]['Mittag'].unique()
-                        matching_dinner = search_results[search_results['Frühstück'] == selected_item]['Abend'].unique()
-
-                        selected_lunch = st.selectbox(f"Mittagessen basierend auf deiner Frühstücksauswahl ({day}):", matching_lunch, key=f"lunch_from_search_{day}")
-                        selected_dinner = st.selectbox(f"Abendessen basierend auf deiner Frühstücksauswahl ({day}):", matching_dinner, key=f"dinner_from_search_{day}")
-                else:
-                    st.warning(f"Keine Ergebnisse gefunden für {day}.")
+            # Mittag- und Abendessen basierend auf Frühstücksauswahl
+            selected_lunch = st.selectbox(f"Mittagessen basierend auf deiner Frühstücksauswahl ({day}):", matching_lunch, key=f"lunch_{day}")
+            selected_dinner = st.selectbox(f"Abendessen basierend auf deiner Frühstücksauswahl ({day}):", matching_dinner, key=f"dinner_{day}")
 
             weekly_plan[day] = {
-                'Frühstück': st.session_state.get(f"selected_Frühstück_{day}", None),
-                'Mittag': st.session_state.get(f"lunch_from_search_{day}", None),
-                'Abend': st.session_state.get(f"dinner_from_search_{day}", None)
+                'Frühstück': selected_breakfast,
+                'Mittag': selected_lunch,
+                'Abend': selected_dinner
             }
 
     # Wochenplan anzeigen
