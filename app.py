@@ -30,10 +30,6 @@ data['Frühstück'] = data['Frühstück'].astype(str).str.strip().str.lower()
 data['Mittag'] = data['Mittag'].astype(str).str.strip()
 data['Abend'] = data['Abend'].astype(str).str.strip()
 
-# Debug: Display data for verification
-st.write("Originaldaten aus der Tabelle:")
-st.dataframe(data)
-
 # Streamlit App
 def main():
     st.title("Mahlzeit-Empfehlungen mit Wochenplan und Einkaufsliste")
