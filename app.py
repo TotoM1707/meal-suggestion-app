@@ -3,9 +3,9 @@ import pandas as pd
 import os
 
 # Load the data
-file_path = 'LEMME_Chat_Translated_Manual_DE.xlsx'
+file_path = 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx'
 if not os.path.exists(file_path):
-    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
+    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
     st.stop()
 
 try:
@@ -32,8 +32,8 @@ data['Abend'] = data['Abend'].astype(str).str.strip()
 
 # Streamlit App
 def main():
-    st.title("Mahlzeit-Empfehlungen")
-    st.write("Wähle ein Frühstück, Mittag oder Abend aus, um die fehlenden Mahlzeiten anzuzeigen.")
+    st.title("Mahlzeit-Empfehlungen mit Wochenplan und Einkaufsliste")
+    st.write("Wähle ein Frühstück, Mittag oder Abend aus, um die fehlenden Mahlzeiten anzuzeigen und einen Wochenplan zu erstellen.")
 
     # Auswahloptionen
     search_category = st.radio("Wähle die Kategorie für die Suche:", ("Frühstück", "Mittag", "Abend"))
@@ -84,9 +84,36 @@ def main():
                 st.write("**Abendoptionen:**")
                 for dinner in dinner_options:
                     st.write(f"- {dinner}")
-        else:
-            st.write("Keine passenden Mahlzeiten gefunden. Bitte überprüfen Sie die Eingabedaten.")
+
+    # Wochenplan erstellen
+    st.write("## Wochenplan erstellen")
+    days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
+    weekly_plan = {}
+
+    for day in days:
+        st.write(f"### {day}")
+        breakfast = st.selectbox(f"Frühstück für {day}", data['Frühstück'].unique(), key=f"breakfast_{day}")
+        lunch = st.selectbox(f"Mittagessen für {day}", data['Mittag'].unique(), key=f"lunch_{day}")
+        dinner = st.selectbox(f"Abendessen für {day}", data['Abend'].unique(), key=f"dinner_{day}")
+        weekly_plan[day] = {
+            'Frühstück': breakfast,
+            'Mittag': lunch,
+            'Abend': dinner
+        }
+
+    st.write("## Dein Wochenplan")
+    st.write(weekly_plan)
+
+    # Einkaufsliste generieren
+    st.write("## Einkaufsliste")
+    all_meals = []
+    for day, meals in weekly_plan.items():
+        all_meals.extend(meals.values())
+
+    shopping_list = pd.Series(all_meals).value_counts()
+    st.write("### Benötigte Zutaten:")
+    for item, count in shopping_list.items():
+        st.write(f"- {item} ({count}x)")
 
 if __name__ == "__main__":
     main()
-
