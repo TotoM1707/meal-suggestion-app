@@ -55,33 +55,15 @@ def main():
         with tab:
             st.write(f"### {day}")
 
-            day_search_category = st.radio(f"Wähle die Kategorie für die Suche ({day}):", ("Frühstück", "Mittag", "Abend"), key=f"search_category_{day}")
-            day_search_query = st.text_input(f"Suche nach {day_search_category}-Optionen ({day}):", key=f"search_query_{day}").strip().lower()
+            # Optionen für Frühstück, Mittag und Abend basierend auf der Tabelle filtern
+            filtered_breakfast = data[data['Frühstück'].isin(all_selected_meals)]['Frühstück'].unique() if all_selected_meals else data['Frühstück'].unique()
+            filtered_lunch = data[data['Mittag'].isin(all_selected_meals)]['Mittag'].unique() if all_selected_meals else data['Mittag'].unique()
+            filtered_dinner = data[data['Abend'].isin(all_selected_meals)]['Abend'].unique() if all_selected_meals else data['Abend'].unique()
 
-            if day_search_category == "Frühstück":
-                day_filtered_options = data[data['Frühstück'].str.contains(day_search_query, na=False)]['Frühstück'].unique() if day_search_query else data['Frühstück'].unique()
-            elif day_search_category == "Mittag":
-                day_filtered_options = data[data['Mittag'].str.contains(day_search_query, na=False)]['Mittag'].unique() if day_search_query else data['Mittag'].unique()
-            elif day_search_category == "Abend":
-                day_filtered_options = data[data['Abend'].str.contains(day_search_query, na=False)]['Abend'].unique() if day_search_query else data['Abend'].unique()
-
-            day_options = sorted(day_filtered_options)
-            if not day_options:
-                st.error(f"Keine passenden {day_search_category}-Optionen für {day} gefunden. Bitte ändern Sie Ihre Suche.")
-                continue
-
-            if day_search_category == "Frühstück":
-                breakfast = st.selectbox(f"Frühstück für {day}", day_options, key=f"breakfast_{day}")
-                lunch = st.selectbox(f"Mittagessen für {day}", data['Mittag'].unique(), key=f"lunch_{day}")
-                dinner = st.selectbox(f"Abendessen für {day}", data['Abend'].unique(), key=f"dinner_{day}")
-            elif day_search_category == "Mittag":
-                lunch = st.selectbox(f"Mittagessen für {day}", day_options, key=f"lunch_{day}")
-                breakfast = st.selectbox(f"Frühstück für {day}", data['Frühstück'].unique(), key=f"breakfast_{day}")
-                dinner = st.selectbox(f"Abendessen für {day}", data['Abend'].unique(), key=f"dinner_{day}")
-            elif day_search_category == "Abend":
-                dinner = st.selectbox(f"Abendessen für {day}", day_options, key=f"dinner_{day}")
-                breakfast = st.selectbox(f"Frühstück für {day}", data['Frühstück'].unique(), key=f"breakfast_{day}")
-                lunch = st.selectbox(f"Mittagessen für {day}", data['Mittag'].unique(), key=f"lunch_{day}")
+            # Auswahl für Frühstück, Mittag und Abend
+            breakfast = st.selectbox(f"Frühstück für {day}", filtered_breakfast, key=f"breakfast_{day}")
+            lunch = st.selectbox(f"Mittagessen für {day}", filtered_lunch, key=f"lunch_{day}")
+            dinner = st.selectbox(f"Abendessen für {day}", filtered_dinner, key=f"dinner_{day}")
 
             weekly_plan[day] = {
                 'Frühstück': breakfast,
