@@ -50,13 +50,16 @@ def main():
         if not search_results.empty:
             st.write("### Suchergebnisse:")
             matching_items = search_results[search_category].unique()
-            for item in matching_items:
-                st.write(f"- {item}")
+            selected_item = st.selectbox(f"Wähle ein {search_category} aus den Suchergebnissen:", matching_items)
 
             if search_category == "Frühstück":
                 st.write("### Passende Mittags- und Abendessen:")
-                for _, row in search_results.iterrows():
-                    st.write(f"- **Mittag:** {row['Mittag']}, **Abend:** {row['Abend']}")
+                matching_lunch = search_results[search_results['Frühstück'] == selected_item]['Mittag'].unique()
+                matching_dinner = search_results[search_results['Frühstück'] == selected_item]['Abend'].unique()
+
+                selected_lunch = st.selectbox("Mittagessen basierend auf deiner Frühstücksauswahl:", matching_lunch, key="lunch_from_search")
+                selected_dinner = st.selectbox("Abendessen basierend auf deiner Frühstücksauswahl:", matching_dinner, key="dinner_from_search")
+
         else:
             st.warning("Keine Ergebnisse gefunden.")
 
