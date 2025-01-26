@@ -45,16 +45,28 @@ def main():
         with tab:
             st.write(f"### {day}")
 
-            # Frühstücksauswahl
-            selected_breakfast = st.selectbox(f"Wähle ein Frühstück für {day}", data['Frühstück'].unique(), key=f"breakfast_{day}")
-            matching_lunch = data[data['Frühstück'] == selected_breakfast]['Mittag'].unique()
+            # Auswahl der ersten Mahlzeit
+            starting_meal = st.radio(f"Mit welcher Mahlzeit möchtest du für {day} beginnen?", ("Frühstück", "Mittag", "Abend"), key=f"starting_meal_{day}")
 
-            # Mittagessen basierend auf Frühstücksauswahl
-            selected_lunch = st.selectbox(f"Mittagessen basierend auf deiner Frühstücksauswahl ({day}):", matching_lunch, key=f"lunch_{day}")
-            matching_dinner_from_breakfast_lunch = data[(data['Frühstück'] == selected_breakfast) & (data['Mittag'] == selected_lunch)]['Abend'].unique()
-
-            # Abendessen
-            selected_dinner = st.selectbox(f"Abendessen für {day} (dynamisch angepasst):", matching_dinner_from_breakfast_lunch, key=f"dinner_{day}")
+            # Dynamische Logik basierend auf der ersten Mahlzeit
+            if starting_meal == "Frühstück":
+                selected_breakfast = st.selectbox(f"Wähle ein Frühstück für {day}", data['Frühstück'].unique(), key=f"breakfast_{day}")
+                matching_lunch = data[data['Frühstück'] == selected_breakfast]['Mittag'].unique()
+                selected_lunch = st.selectbox(f"Mittagessen basierend auf deiner Frühstücksauswahl ({day}):", matching_lunch, key=f"lunch_{day}")
+                matching_dinner = data[(data['Frühstück'] == selected_breakfast) & (data['Mittag'] == selected_lunch)]['Abend'].unique()
+                selected_dinner = st.selectbox(f"Abendessen basierend auf deiner Frühstücks- und Mittagsauswahl ({day}):", matching_dinner, key=f"dinner_{day}")
+            elif starting_meal == "Mittag":
+                selected_lunch = st.selectbox(f"Wähle ein Mittagessen für {day}", data['Mittag'].unique(), key=f"lunch_{day}")
+                matching_breakfast = data[data['Mittag'] == selected_lunch]['Frühstück'].unique()
+                selected_breakfast = st.selectbox(f"Frühstück basierend auf deiner Mittagsauswahl ({day}):", matching_breakfast, key=f"breakfast_{day}")
+                matching_dinner = data[(data['Mittag'] == selected_lunch) & (data['Frühstück'] == selected_breakfast)]['Abend'].unique()
+                selected_dinner = st.selectbox(f"Abendessen basierend auf deiner Frühstücks- und Mittagsauswahl ({day}):", matching_dinner, key=f"dinner_{day}")
+            elif starting_meal == "Abend":
+                selected_dinner = st.selectbox(f"Wähle ein Abendessen für {day}", data['Abend'].unique(), key=f"dinner_{day}")
+                matching_lunch = data[data['Abend'] == selected_dinner]['Mittag'].unique()
+                selected_lunch = st.selectbox(f"Mittagessen basierend auf deiner Abendauswahl ({day}):", matching_lunch, key=f"lunch_{day}")
+                matching_breakfast = data[(data['Abend'] == selected_dinner) & (data['Mittag'] == selected_lunch)]['Frühstück'].unique()
+                selected_breakfast = st.selectbox(f"Frühstück basierend auf deiner Mittag- und Abendauswahl ({day}):", matching_breakfast, key=f"breakfast_{day}")
 
             weekly_plan[day] = {
                 'Frühstück': selected_breakfast,
