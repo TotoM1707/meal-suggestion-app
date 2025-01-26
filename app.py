@@ -85,21 +85,24 @@ def main():
                 for dinner in dinner_options:
                     st.write(f"- {dinner}")
 
-    # Wochenplan erstellen
+    # Wochenplan erstellen mit Tabs
     st.write("## Wochenplan erstellen")
     days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
     weekly_plan = {}
 
-    for day in days:
-        st.write(f"### {day}")
-        breakfast = st.selectbox(f"Frühstück für {day}", data['Frühstück'].unique(), key=f"breakfast_{day}")
-        lunch = st.selectbox(f"Mittagessen für {day}", data['Mittag'].unique(), key=f"lunch_{day}")
-        dinner = st.selectbox(f"Abendessen für {day}", data['Abend'].unique(), key=f"dinner_{day}")
-        weekly_plan[day] = {
-            'Frühstück': breakfast,
-            'Mittag': lunch,
-            'Abend': dinner
-        }
+    tabs = st.tabs(days)
+
+    for day, tab in zip(days, tabs):
+        with tab:
+            st.write(f"### {day}")
+            breakfast = st.selectbox(f"Frühstück für {day}", data['Frühstück'].unique(), key=f"breakfast_{day}")
+            lunch = st.selectbox(f"Mittagessen für {day}", data['Mittag'].unique(), key=f"lunch_{day}")
+            dinner = st.selectbox(f"Abendessen für {day}", data['Abend'].unique(), key=f"dinner_{day}")
+            weekly_plan[day] = {
+                'Frühstück': breakfast,
+                'Mittag': lunch,
+                'Abend': dinner
+            }
 
     st.write("## Dein Wochenplan")
     st.write(weekly_plan)
