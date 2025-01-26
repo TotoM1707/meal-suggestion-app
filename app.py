@@ -34,86 +34,52 @@ data['Abend'] = data['Abend'].astype(str).str.strip()
 def main():
     st.title("Mahlzeit-Empfehlungen mit Wochenplan und Einkaufsliste")
 
-    # Kategorieauswahl vor der Suche
-    st.write("## Suche nach Mahlzeiten")
-    search_category = st.radio("Welche Kategorie möchtest du durchsuchen?", ("Frühstück", "Mittag", "Abend"))
-    search_query = st.text_input(f"Gib einen Suchbegriff für {search_category} ein:").strip().lower()
-
-    if search_query:
-        if search_category == "Frühstück":
-            search_results = data[data['Frühstück'].str.contains(search_query, na=False)]
-        elif search_category == "Mittag":
-            search_results = data[data['Mittag'].str.contains(search_query, na=False)]
-        elif search_category == "Abend":
-            search_results = data[data['Abend'].str.contains(search_query, na=False)]
-
-        if not search_results.empty:
-            st.write("### Suchergebnisse:")
-            matching_items = search_results[search_category].unique()
-            selected_item = st.selectbox(f"Wähle ein {search_category} aus den Suchergebnissen:", matching_items)
-
-            if search_category == "Frühstück":
-                st.write("### Passende Mittags- und Abendessen:")
-                matching_lunch = search_results[search_results['Frühstück'] == selected_item]['Mittag'].unique()
-                matching_dinner = search_results[search_results['Frühstück'] == selected_item]['Abend'].unique()
-
-                selected_lunch = st.selectbox("Mittagessen basierend auf deiner Frühstücksauswahl:", matching_lunch, key="lunch_from_search")
-                selected_dinner = st.selectbox("Abendessen basierend auf deiner Frühstücksauswahl:", matching_dinner, key="dinner_from_search")
-
-        else:
-            st.warning("Keine Ergebnisse gefunden.")
-
     # Wochenplan erstellen mit Tabs
     st.write("## Wochenplan erstellen")
     days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
     weekly_plan = {}
 
-    # Buttons für Wochenplan und Einkaufsliste oben anzeigen
-    col1, col2 = st.columns(2)
-    with col1:
-        show_plan = st.button("Wochenplan anzeigen")
-    with col2:
-        show_list = st.button("Einkaufsliste anzeigen")
-
     tabs = st.tabs(days)
-
-    # Mahlzeitzählung für Warnungen
-    all_selected_meals = []
 
     for day, tab in zip(days, tabs):
         with tab:
             st.write(f"### {day}")
 
-            # Auswahl für Frühstück
-            breakfast = st.selectbox(f"Frühstück für {day}", data['Frühstück'].unique(), key=f"breakfast_{day}")
-            matching_lunch = data[data['Frühstück'] == breakfast]['Mittag'].unique()
-            matching_dinner = data[data['Frühstück'] == breakfast]['Abend'].unique()
+            # Kategorieauswahl und Suche
+            search_category = st.radio(f"Welche Kategorie möchtest du durchsuchen? ({day})", ("Frühstück", "Mittag", "Abend"), key=f"search_category_{day}")
+            search_query = st.text_input(f"Gib einen Suchbegriff für {search_category} ein ({day}):", key=f"search_query_{day}").strip().lower()
 
-            # Auswahl für Mittagessen
-            lunch = st.selectbox(f"Mittagessen für {day}", matching_lunch, key=f"lunch_{day}")
-            matching_dinner = data[(data['Frühstück'] == breakfast) & (data['Mittag'] == lunch)]['Abend'].unique()
+            if search_query:
+                if search_category == "Frühstück":
+                    search_results = data[data['Frühstück'].str.contains(search_query, na=False)]
+                elif search_category == "Mittag":
+                    search_results = data[data['Mittag'].str.contains(search_query, na=False)]
+                elif search_category == "Abend":
+                    search_results = data[data['Abend'].str.contains(search_query, na=False)]
 
-            # Auswahl für Abendessen
-            dinner = st.selectbox(f"Abendessen für {day}", matching_dinner, key=f"dinner_{day}")
+                if not search_results.empty:
+                    st.write("### Suchergebnisse:")
+                    matching_items = search_results[search_category].unique()
+                    selected_item = st.selectbox(f"Wähle ein {search_category} aus den Suchergebnissen ({day}):", matching_items, key=f"selected_{search_category}_{day}")
+
+                    if search_category == "Frühstück":
+                        st.write("### Passende Mittags- und Abendessen:")
+                        matching_lunch = search_results[search_results['Frühstück'] == selected_item]['Mittag'].unique()
+                        matching_dinner = search_results[search_results['Frühstück'] == selected_item]['Abend'].unique()
+
+                        selected_lunch = st.selectbox(f"Mittagessen basierend auf deiner Frühstücksauswahl ({day}):", matching_lunch, key=f"lunch_from_search_{day}")
+                        selected_dinner = st.selectbox(f"Abendessen basierend auf deiner Frühstücksauswahl ({day}):", matching_dinner, key=f"dinner_from_search_{day}")
+                else:
+                    st.warning(f"Keine Ergebnisse gefunden für {day}.")
 
             weekly_plan[day] = {
-                'Frühstück': breakfast,
-                'Mittag': lunch,
-                'Abend': dinner
+                'Frühstück': st.session_state.get(f"selected_Frühstück_{day}", None),
+                'Mittag': st.session_state.get(f"lunch_from_search_{day}", None),
+                'Abend': st.session_state.get(f"dinner_from_search_{day}", None)
             }
 
-            # Sammeln der Mahlzeiten für Warnungen
-            all_selected_meals.extend([breakfast, lunch, dinner])
-
-            # Warnung, wenn eine Mahlzeit mehr als 2-mal ausgewählt wurde
-            meal_counts = pd.Series(all_selected_meals).value_counts()
-            repeated_meals = meal_counts[meal_counts > 2]
-            if not repeated_meals.empty:
-                st.warning("Folgende Mahlzeiten wurden mehr als 2-mal ausgewählt:")
-                for meal, count in repeated_meals.items():
-                    st.write(f"- {meal}: {count}x")
-
-    if show_plan:
+    # Wochenplan anzeigen
+    if st.button("Wochenplan anzeigen"):
         st.write("## Dein Wochenplan (Druckversion)")
         for day, meals in weekly_plan.items():
             st.write(f"### {day}")
@@ -121,9 +87,12 @@ def main():
             st.write(f"- **Mittag:** {meals['Mittag']}")
             st.write(f"- **Abend:** {meals['Abend']}")
 
-    if show_list:
+    # Einkaufsliste generieren
+    if st.button("Einkaufsliste anzeigen"):
+        all_meals = [meal for day_meals in weekly_plan.values() for meal in day_meals.values() if meal]
+        shopping_list = pd.Series(all_meals).value_counts()
+
         st.write("## Einkaufsliste (Druckversion)")
-        shopping_list = pd.Series(all_selected_meals).value_counts()
         st.write("### Benötigte Zutaten:")
         for item, count in shopping_list.items():
             st.write(f"- {item} ({count}x)")
