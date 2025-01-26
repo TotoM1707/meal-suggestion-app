@@ -34,30 +34,23 @@ data['Abend'] = data['Abend'].astype(str).str.strip()
 def main():
     st.title("Mahlzeit-Empfehlungen mit Wochenplan und Einkaufsliste")
 
-    # Suchfunktion hinzufügen
+    # Kategorieauswahl vor der Suche
     st.write("## Suche nach Mahlzeiten")
-    search_query = st.text_input("Gib einen Suchbegriff ein (z. B. Frühstück, Mittag, Abend):").strip().lower()
+    search_category = st.radio("Welche Kategorie möchtest du durchsuchen?", ("Frühstück", "Mittag", "Abend"))
+    search_query = st.text_input(f"Gib einen Suchbegriff für {search_category} ein:").strip().lower()
 
     if search_query:
-        search_results = data[(data['Frühstück'].str.contains(search_query, na=False)) |
-                              (data['Mittag'].str.contains(search_query, na=False)) |
-                              (data['Abend'].str.contains(search_query, na=False))]
+        if search_category == "Frühstück":
+            search_results = data[data['Frühstück'].str.contains(search_query, na=False)]
+        elif search_category == "Mittag":
+            search_results = data[data['Mittag'].str.contains(search_query, na=False)]
+        elif search_category == "Abend":
+            search_results = data[data['Abend'].str.contains(search_query, na=False)]
+
         if not search_results.empty:
             st.write("### Suchergebnisse:")
-            filtered_breakfast = search_results['Frühstück'].unique()
-            filtered_lunch = search_results['Mittag'].unique()
-            filtered_dinner = search_results['Abend'].unique()
-
-            st.write("**Frühstück:**")
-            for item in filtered_breakfast:
-                st.write(f"- {item}")
-
-            st.write("**Mittag:**")
-            for item in filtered_lunch:
-                st.write(f"- {item}")
-
-            st.write("**Abend:**")
-            for item in filtered_dinner:
+            matching_items = search_results[search_category].unique()
+            for item in matching_items:
                 st.write(f"- {item}")
         else:
             st.warning("Keine Ergebnisse gefunden.")
