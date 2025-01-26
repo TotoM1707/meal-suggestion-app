@@ -52,6 +52,11 @@ def main():
             matching_items = search_results[search_category].unique()
             for item in matching_items:
                 st.write(f"- {item}")
+
+            if search_category == "Frühstück":
+                st.write("### Passende Mittags- und Abendessen:")
+                for _, row in search_results.iterrows():
+                    st.write(f"- **Mittag:** {row['Mittag']}, **Abend:** {row['Abend']}")
         else:
             st.warning("Keine Ergebnisse gefunden.")
 
