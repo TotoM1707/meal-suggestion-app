@@ -78,6 +78,15 @@ def main():
                 'Abend': selected_dinner
             }
 
+    # Warnung, wenn eine Mahlzeit mehr als 2-mal ausgewählt wurde
+    all_selected_meals = [meal for day_meals in weekly_plan.values() for meal in day_meals.values() if meal]
+    meal_counts = pd.Series(all_selected_meals).value_counts()
+    repeated_meals = meal_counts[meal_counts > 2]
+    if not repeated_meals.empty:
+        st.warning("Folgende Mahlzeiten wurden mehr als 2-mal in der Woche ausgewählt und sollten reduziert werden:")
+        for meal, count in repeated_meals.items():
+            st.write(f"- {meal}: {count}x")
+
     # Wochenplan anzeigen
     if st.button("Wochenplan anzeigen"):
         st.write("## Dein Wochenplan (Druckversion)")
@@ -89,9 +98,7 @@ def main():
 
     # Einkaufsliste generieren
     if st.button("Einkaufsliste anzeigen"):
-        all_meals = [meal for day_meals in weekly_plan.values() for meal in day_meals.values() if meal]
-        shopping_list = pd.Series(all_meals).value_counts()
-
+        shopping_list = meal_counts
         st.write("## Einkaufsliste (Druckversion)")
         st.write("### Benötigte Zutaten:")
         for item, count in shopping_list.items():
