@@ -117,7 +117,7 @@ def display_weekly_plan():
         st.write(f"### {day}")
         st.write(f"- **Frühstück:** {meals['Frühstück']}")
         st.write(f"- **Mittag:** {meals['Mittag']}")
-        st.write(f"- **Abend:** {meals['Abend']}"))
+        st.write(f"- **Abend:** {meals['Abend']}")
 
     # Save the weekly plan for the shopping list
     st.session_state['weekly_plan'] = auto_plan
