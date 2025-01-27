@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import os
 import random
-from fpdf import FPDF
 
 # Load the data
 file_path = 'LEMME_Chat_Translated_Manual_DE.xlsx'
