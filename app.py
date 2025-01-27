@@ -39,7 +39,7 @@ def main():
     st.title("Mahlzeit-Empfehlungen mit Wochenplan und Einkaufsliste")
 
     # Seiten-Navigation
-    page = st.sidebar.radio("Navigation", ["Startseite", "Wochenplan", "Monatsplan"])
+    page = st.sidebar.radio("Navigation", ["Startseite", "Wochenplan", "Monatsplan", "Einkaufsliste"])
 
     if page == "Startseite":
         display_start_page()
@@ -47,11 +47,13 @@ def main():
         display_weekly_plan()
     elif page == "Monatsplan":
         display_monthly_plan()
+    elif page == "Einkaufsliste":
+        display_shopping_list()
 
 
 def display_start_page():
     st.write("## Willkommen zur Mahlzeitenplanung")
-    st.write("Nutzen Sie das Menü auf der linken Seite, um zwischen Wochen- und Monatsplänen zu wechseln.")
+    st.write("Nutzen Sie das Menü auf der linken Seite, um zwischen Wochen-, Monatsplänen und der Einkaufsliste zu wechseln.")
 
 
 def display_weekly_plan():
@@ -87,6 +89,9 @@ def display_weekly_plan():
         st.write(f"- **Mittag:** {meals['Mittag']}")
         st.write(f"- **Abend:** {meals['Abend']}")
 
+    # Save the weekly plan for the shopping list
+    st.session_state['weekly_plan'] = auto_plan
+
 
 def display_monthly_plan():
     days_in_month = 30
@@ -120,6 +125,33 @@ def display_monthly_plan():
         st.write(f"- **Frühstück:** {meals['Frühstück']}")
         st.write(f"- **Mittag:** {meals['Mittag']}")
         st.write(f"- **Abend:** {meals['Abend']}")
+
+    # Save the monthly plan for the shopping list
+    st.session_state['monthly_plan'] = auto_month_plan
+
+
+def display_shopping_list():
+    st.write("## Einkaufsliste")
+
+    # Collect all meals from weekly and monthly plans
+    weekly_plan = st.session_state.get('weekly_plan', {})
+    monthly_plan = st.session_state.get('monthly_plan', {})
+
+    all_meals = []
+    for plan in [weekly_plan, monthly_plan]:
+        for day, meals in plan.items():
+            all_meals.extend(meals.values())
+
+    if not all_meals:
+        st.write("Es wurden noch keine Pläne erstellt. Bitte erstellen Sie zuerst einen Wochen- oder Monatsplan.")
+        return
+
+    shopping_list = pd.Series(all_meals).value_counts()
+
+    st.write("### Benötigte Zutaten:")
+    for item, count in shopping_list.items():
+        st.write(f"- {item} ({count}x)")
+
 
 if __name__ == "__main__":
     main()
