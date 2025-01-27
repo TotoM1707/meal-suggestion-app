@@ -34,27 +34,6 @@ data['Abend'] = data['Abend'].astype(str).str.strip()
 # Memory for previously used meals
 used_meals = set()
 
-# Function to generate PDF
-def generate_pdf(plan, title):
-    pdf = FPDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-
-    pdf.cell(200, 10, txt=title, ln=True, align='C')
-    pdf.ln(10)
-
-    for day, meals in plan.items():
-        pdf.set_font("Arial", style='B', size=12)
-        pdf.cell(200, 10, txt=f"{day}", ln=True)
-        pdf.set_font("Arial", size=12)
-        pdf.cell(200, 10, txt=f"- Frühstück: {meals['Frühstück']}", ln=True)
-        pdf.cell(200, 10, txt=f"- Mittag: {meals['Mittag']}", ln=True)
-        pdf.cell(200, 10, txt=f"- Abend: {meals['Abend']}", ln=True)
-        pdf.ln(5)
-
-    return pdf
-
 # Streamlit App
 def main():
     st.title("Mahlzeit-Empfehlungen mit Wochenplan und Einkaufsliste")
@@ -144,13 +123,6 @@ def main():
             st.write(f"- **Mittag:** {meals['Mittag']}")
             st.write(f"- **Abend:** {meals['Abend']}")
 
-        # PDF generieren und herunterladen
-        pdf = generate_pdf(auto_plan, "Automatisch erstellter Wochenplan")
-        pdf_output = "wochenplan.pdf"
-        pdf.output(pdf_output)
-        with open(pdf_output, "rb") as pdf_file:
-            st.download_button("Wochenplan als PDF herunterladen", data=pdf_file, file_name="Wochenplan.pdf", mime="application/pdf")
-
     # Automatischen Monatsplan generieren
     if st.button("Automatischen Monatsplan erstellen"):
         days_in_month = 30
@@ -183,13 +155,6 @@ def main():
             st.write(f"- **Frühstück:** {meals['Frühstück']}")
             st.write(f"- **Mittag:** {meals['Mittag']}")
             st.write(f"- **Abend:** {meals['Abend']}")
-
-        # PDF generieren und herunterladen
-        pdf = generate_pdf(auto_month_plan, "Automatisch erstellter Monatsplan")
-        pdf_output = "monatsplan.pdf"
-        pdf.output(pdf_output)
-        with open(pdf_output, "rb") as pdf_file:
-            st.download_button("Monatsplan als PDF herunterladen", data=pdf_file, file_name="Monatsplan.pdf", mime="application/pdf")
 
     # Wochenplan anzeigen
     if st.button("Wochenplan anzeigen"):
