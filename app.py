@@ -6,7 +6,7 @@ import random
 # Load the data
 file_path = 'LEMME_Chat_Translated_Manual_DE.xlsx'
 if not os.path.exists(file_path):
-    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
+    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
     st.stop()
 
 try:
@@ -117,7 +117,7 @@ def display_weekly_plan():
         st.write(f"### {day}")
         st.write(f"- **Frühstück:** {meals['Frühstück']}")
         st.write(f"- **Mittag:** {meals['Mittag']}")
-        st.write(f"- **Abend:** {meals['Abend']}")
+        st.write(f"- **Abend:** {meals['Abend']}"))
 
     # Save the weekly plan for the shopping list
     st.session_state['weekly_plan'] = auto_plan
@@ -182,5 +182,5 @@ def display_shopping_list():
     for item, count in shopping_list.items():
         st.write(f"- {item} ({count}x)")
 
-
-if __name__ == "
+if __name__ == "__main__":
+    main()
