@@ -1,11 +1,12 @@
 import streamlit as st
 import pandas as pd
 import os
+import random
 
 # Load the data
 file_path = 'LEMME_Chat_Translated_Manual_DE.xlsx'
 if not os.path.exists(file_path):
-    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
+    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
     st.stop()
 
 try:
@@ -29,6 +30,9 @@ if data.empty:
 data['Frühstück'] = data['Frühstück'].astype(str).str.strip().str.lower()
 data['Mittag'] = data['Mittag'].astype(str).str.strip()
 data['Abend'] = data['Abend'].astype(str).str.strip()
+
+# Memory for previously used meals
+used_meals = set()
 
 # Streamlit App
 def main():
@@ -86,6 +90,38 @@ def main():
         st.warning("Folgende Mahlzeiten wurden mehr als 2-mal in der Woche ausgewählt und sollten reduziert werden:")
         for meal, count in repeated_meals.items():
             st.write(f"- {meal}: {count}x")
+
+    # Automatischen Wochenplan generieren
+    if st.button("Automatischen Wochenplan erstellen"):
+        auto_plan = {}
+        available_meals = data.copy()
+
+        for day in days:
+            day_plan = {}
+            for meal_type in ['Frühstück', 'Mittag', 'Abend']:
+                remaining_meals = available_meals[meal_type][~available_meals[meal_type].isin(used_meals)].unique()
+                if len(remaining_meals) == 0:
+                    st.error(f"Nicht genügend verfügbare {meal_type} Optionen für {day}.")
+                    return
+
+                selected_meal = random.choice(remaining_meals)
+                day_plan[meal_type] = selected_meal
+
+                # Mahlzeit als verwendet markieren
+                used_meals.add(selected_meal)
+
+                # Sicherstellen, dass maximal 2 Tage hintereinander gleiche Mahlzeiten gewählt werden
+                if len(used_meals) > 7:
+                    used_meals.pop()
+
+            auto_plan[day] = day_plan
+
+        st.write("## Automatisch erstellter Wochenplan")
+        for day, meals in auto_plan.items():
+            st.write(f"### {day}")
+            st.write(f"- **Frühstück:** {meals['Frühstück']}")
+            st.write(f"- **Mittag:** {meals['Mittag']}")
+            st.write(f"- **Abend:** {meals['Abend']}")
 
     # Wochenplan anzeigen
     if st.button("Wochenplan anzeigen"):
