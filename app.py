@@ -4,7 +4,7 @@ import os
 import random
 
 # Load the data
-file_path = 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx'
+file_path = 'LEMME_Chat_Translated_Manual_DE.xlsx'
 if not os.path.exists(file_path):
     st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
     st.stop()
