@@ -6,7 +6,7 @@ import random
 # Load the data
 file_path = 'LEMME_Chat_Translated_Manual_DE.xlsx'
 if not os.path.exists(file_path):
-    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
+    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
     st.stop()
 
 try:
@@ -118,6 +118,39 @@ def main():
 
         st.write("## Automatisch erstellter Wochenplan")
         for day, meals in auto_plan.items():
+            st.write(f"### {day}")
+            st.write(f"- **Frühstück:** {meals['Frühstück']}")
+            st.write(f"- **Mittag:** {meals['Mittag']}")
+            st.write(f"- **Abend:** {meals['Abend']}")
+
+    # Automatischen Monatsplan generieren
+    if st.button("Automatischen Monatsplan erstellen"):
+        days_in_month = 30
+        auto_month_plan = {}
+        available_meals = data.copy()
+
+        for day in range(1, days_in_month + 1):
+            day_plan = {}
+            for meal_type in ['Frühstück', 'Mittag', 'Abend']:
+                remaining_meals = available_meals[meal_type][~available_meals[meal_type].isin(used_meals)].unique()
+                if len(remaining_meals) == 0:
+                    st.error(f"Nicht genügend verfügbare {meal_type} Optionen für Tag {day}.")
+                    return
+
+                selected_meal = random.choice(remaining_meals)
+                day_plan[meal_type] = selected_meal
+
+                # Mahlzeit als verwendet markieren
+                used_meals.add(selected_meal)
+
+                # Sicherstellen, dass maximal 2 Tage hintereinander gleiche Mahlzeiten gewählt werden
+                if len(used_meals) > 7:
+                    used_meals.pop()
+
+            auto_month_plan[f"Tag {day}"] = day_plan
+
+        st.write("## Automatisch erstellter Monatsplan")
+        for day, meals in auto_month_plan.items():
             st.write(f"### {day}")
             st.write(f"- **Frühstück:** {meals['Frühstück']}")
             st.write(f"- **Mittag:** {meals['Mittag']}")
