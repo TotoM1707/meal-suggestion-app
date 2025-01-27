@@ -36,7 +36,7 @@ used_meals = set()
 
 # Streamlit App
 def main():
-    st.title("Mahlzeit-Empfehlungen mit Wochenplan und Einkaufsliste")
+    st.markdown("<h2 style='font-size: 20px;'>Mahlzeit-Empfehlungen mit Wochenplan und Einkaufsliste</h2>", unsafe_allow_html=True)
 
     # Seiten-Navigation
     page = st.sidebar.radio("Navigation", ["Startseite", "Wochenplan", "Monatsplan", "Einkaufsliste"])
