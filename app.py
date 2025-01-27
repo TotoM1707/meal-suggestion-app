@@ -6,7 +6,7 @@ import random
 # Load the data
 file_path = 'LEMME_Chat_Translated_Manual_DE.xlsx'
 if not os.path.exists(file_path):
-    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
+    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
     st.stop()
 
 try:
@@ -60,13 +60,41 @@ def display_start_page():
     meal_type = st.selectbox("Wähle die Mahlzeit aus", ["Frühstück", "Mittag", "Abend"], key="meal_type_search")
     if meal_type == "Frühstück":
         search_results = data['Frühstück'].unique()
+        matching_lunch = data[data['Frühstück'].isin(search_results)]['Mittag'].unique()
+        matching_dinner = data[data['Frühstück'].isin(search_results)]['Abend'].unique()
     elif meal_type == "Mittag":
         search_results = data['Mittag'].unique()
+        matching_breakfast = data[data['Mittag'].isin(search_results)]['Frühstück'].unique()
+        matching_dinner = data[data['Mittag'].isin(search_results)]['Abend'].unique()
     elif meal_type == "Abend":
         search_results = data['Abend'].unique()
+        matching_breakfast = data[data['Abend'].isin(search_results)]['Frühstück'].unique()
+        matching_lunch = data[data['Abend'].isin(search_results)]['Mittag'].unique()
 
     selected_meal = st.selectbox(f"Verfügbare Optionen für {meal_type}", search_results, key="selected_meal_search")
     st.write(f"Du hast ausgewählt: {selected_meal}")
+
+    if meal_type == "Frühstück":
+        st.write("### Passende Mittagessen:")
+        for item in matching_lunch:
+            st.write(f"- {item}")
+        st.write("### Passende Abendessen:")
+        for item in matching_dinner:
+            st.write(f"- {item}")
+    elif meal_type == "Mittag":
+        st.write("### Passende Frühstücke:")
+        for item in matching_breakfast:
+            st.write(f"- {item}")
+        st.write("### Passende Abendessen:")
+        for item in matching_dinner:
+            st.write(f"- {item}")
+    elif meal_type == "Abend":
+        st.write("### Passende Frühstücke:")
+        for item in matching_breakfast:
+            st.write(f"- {item}")
+        st.write("### Passende Mittagessen:")
+        for item in matching_lunch:
+            st.write(f"- {item}")
 
 
 def display_weekly_plan():
