@@ -60,41 +60,30 @@ def display_start_page():
     meal_type = st.selectbox("Wähle die Mahlzeit aus", ["Frühstück", "Mittag", "Abend"], key="meal_type_search")
     if meal_type == "Frühstück":
         search_results = data['Frühstück'].unique()
-        matching_lunch = data[data['Frühstück'].isin(search_results)]['Mittag'].unique()
-        matching_dinner = data[data['Frühstück'].isin(search_results)]['Abend'].unique()
+        selected_meal = st.selectbox("Verfügbare Frühstücke", search_results, key="selected_breakfast_search")
+        matching_lunch = data[data['Frühstück'] == selected_meal]['Mittag'].unique()
+        matching_dinner = data[data['Frühstück'] == selected_meal]['Abend'].unique()
+
+        st.selectbox("Passende Mittagessen", matching_lunch, key="matching_lunch_search")
+        st.selectbox("Passende Abendessen", matching_dinner, key="matching_dinner_search")
+
     elif meal_type == "Mittag":
         search_results = data['Mittag'].unique()
-        matching_breakfast = data[data['Mittag'].isin(search_results)]['Frühstück'].unique()
-        matching_dinner = data[data['Mittag'].isin(search_results)]['Abend'].unique()
+        selected_meal = st.selectbox("Verfügbare Mittagessen", search_results, key="selected_lunch_search")
+        matching_breakfast = data[data['Mittag'] == selected_meal]['Frühstück'].unique()
+        matching_dinner = data[data['Mittag'] == selected_meal]['Abend'].unique()
+
+        st.selectbox("Passende Frühstücke", matching_breakfast, key="matching_breakfast_search")
+        st.selectbox("Passende Abendessen", matching_dinner, key="matching_dinner_search")
+
     elif meal_type == "Abend":
         search_results = data['Abend'].unique()
-        matching_breakfast = data[data['Abend'].isin(search_results)]['Frühstück'].unique()
-        matching_lunch = data[data['Abend'].isin(search_results)]['Mittag'].unique()
+        selected_meal = st.selectbox("Verfügbare Abendessen", search_results, key="selected_dinner_search")
+        matching_breakfast = data[data['Abend'] == selected_meal]['Frühstück'].unique()
+        matching_lunch = data[data['Abend'] == selected_meal]['Mittag'].unique()
 
-    selected_meal = st.selectbox(f"Verfügbare Optionen für {meal_type}", search_results, key="selected_meal_search")
-    st.write(f"Du hast ausgewählt: {selected_meal}")
-
-    if meal_type == "Frühstück":
-        st.write("### Passende Mittagessen:")
-        for item in matching_lunch:
-            st.write(f"- {item}")
-        st.write("### Passende Abendessen:")
-        for item in matching_dinner:
-            st.write(f"- {item}")
-    elif meal_type == "Mittag":
-        st.write("### Passende Frühstücke:")
-        for item in matching_breakfast:
-            st.write(f"- {item}")
-        st.write("### Passende Abendessen:")
-        for item in matching_dinner:
-            st.write(f"- {item}")
-    elif meal_type == "Abend":
-        st.write("### Passende Frühstücke:")
-        for item in matching_breakfast:
-            st.write(f"- {item}")
-        st.write("### Passende Mittagessen:")
-        for item in matching_lunch:
-            st.write(f"- {item}")
+        st.selectbox("Passende Frühstücke", matching_breakfast, key="matching_breakfast_search")
+        st.selectbox("Passende Mittagessen", matching_lunch, key="matching_lunch_search")
 
 
 def display_weekly_plan():
@@ -194,5 +183,4 @@ def display_shopping_list():
         st.write(f"- {item} ({count}x)")
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == "
