@@ -6,7 +6,7 @@ import random
 # Load the data
 file_path = 'LEMME_Chat_Translated_Manual_DE.xlsx'
 if not os.path.exists(file_path):
-    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
+    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
     st.stop()
 
 try:
@@ -54,6 +54,19 @@ def main():
 def display_start_page():
     st.write("## Willkommen zur Mahlzeitenplanung")
     st.write("Nutzen Sie das Menü auf der linken Seite, um zwischen Wochen-, Monatsplänen und der Einkaufsliste zu wechseln.")
+
+    # Suchfunktion hinzufügen
+    st.write("### Mahlzeit suchen")
+    meal_type = st.selectbox("Wähle die Mahlzeit aus", ["Frühstück", "Mittag", "Abend"], key="meal_type_search")
+    if meal_type == "Frühstück":
+        search_results = data['Frühstück'].unique()
+    elif meal_type == "Mittag":
+        search_results = data['Mittag'].unique()
+    elif meal_type == "Abend":
+        search_results = data['Abend'].unique()
+
+    selected_meal = st.selectbox(f"Verfügbare Optionen für {meal_type}", search_results, key="selected_meal_search")
+    st.write(f"Du hast ausgewählt: {selected_meal}")
 
 
 def display_weekly_plan():
