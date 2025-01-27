@@ -4,9 +4,9 @@ import os
 import random
 
 # Load the data
-file_path = 'LEMME_Chat_Translated_Manual_DE.xlsx'
+file_path = 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx'
 if not os.path.exists(file_path):
-    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
+    st.error("Die Datei wurde nicht gefunden. Bitte stellen Sie sicher, dass sich die Datei unter 'C:/Mira/LEMME_Chat_Translated_Manual_DE.xlsx' befindet.")
     st.stop()
 
 try:
@@ -38,132 +38,88 @@ used_meals = set()
 def main():
     st.title("Mahlzeit-Empfehlungen mit Wochenplan und Einkaufsliste")
 
-    # Wochenplan erstellen mit Tabs
-    st.write("## Wochenplan erstellen")
+    # Seiten-Navigation
+    page = st.sidebar.radio("Navigation", ["Startseite", "Wochenplan", "Monatsplan"])
+
+    if page == "Startseite":
+        display_start_page()
+    elif page == "Wochenplan":
+        display_weekly_plan()
+    elif page == "Monatsplan":
+        display_monthly_plan()
+
+
+def display_start_page():
+    st.write("## Willkommen zur Mahlzeitenplanung")
+    st.write("Nutzen Sie das Menü auf der linken Seite, um zwischen Wochen- und Monatsplänen zu wechseln.")
+
+
+def display_weekly_plan():
     days = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag']
-    weekly_plan = {}
+    auto_plan = {}
+    available_meals = data.copy()
 
-    tabs = st.tabs(days)
+    st.write("## Automatischen Wochenplan erstellen")
+    for day in days:
+        day_plan = {}
+        for meal_type in ['Frühstück', 'Mittag', 'Abend']:
+            remaining_meals = available_meals[meal_type][~available_meals[meal_type].isin(used_meals)].unique()
+            if len(remaining_meals) == 0:
+                st.error(f"Nicht genügend verfügbare {meal_type} Optionen für {day}.")
+                return
 
-    for day, tab in zip(days, tabs):
-        with tab:
-            st.write(f"### {day}")
+            selected_meal = random.choice(remaining_meals)
+            day_plan[meal_type] = selected_meal
 
-            # Auswahl der Startmahlzeit
-            starting_meal = st.radio(f"Mit welcher Mahlzeit möchtest du für {day} beginnen?", ("Frühstück", "Mittag", "Abend"), key=f"starting_meal_{day}")
+            # Mahlzeit als verwendet markieren
+            used_meals.add(selected_meal)
 
-            # Frühstücksauswahl
-            selected_breakfast = None
-            selected_lunch = None
-            selected_dinner = None
+            # Sicherstellen, dass maximal 2 Tage hintereinander gleiche Mahlzeiten gewählt werden
+            if len(used_meals) > 7:
+                used_meals.pop()
 
-            if starting_meal == "Frühstück":
-                selected_breakfast = st.selectbox(f"Wähle ein Frühstück für {day}", data['Frühstück'].unique(), key=f"breakfast_{day}")
-                matching_lunch = data[data['Frühstück'] == selected_breakfast]['Mittag'].unique()
-                selected_lunch = st.selectbox(f"Mittagessen basierend auf deiner Frühstücksauswahl ({day}):", matching_lunch, key=f"lunch_{day}")
-                matching_dinner = data[(data['Frühstück'] == selected_breakfast) & (data['Mittag'] == selected_lunch)]['Abend'].unique()
-                selected_dinner = st.selectbox(f"Abendessen basierend auf deiner Frühstücks- und Mittagsauswahl ({day}):", matching_dinner, key=f"dinner_{day}")
-            elif starting_meal == "Mittag":
-                selected_lunch = st.selectbox(f"Wähle ein Mittagessen für {day}", data['Mittag'].unique(), key=f"lunch_{day}")
-                matching_breakfast = data[data['Mittag'] == selected_lunch]['Frühstück'].unique()
-                selected_breakfast = st.selectbox(f"Frühstück basierend auf deiner Mittagsauswahl ({day}):", matching_breakfast, key=f"breakfast_{day}")
-                matching_dinner = data[(data['Mittag'] == selected_lunch) & (data['Frühstück'] == selected_breakfast)]['Abend'].unique()
-                selected_dinner = st.selectbox(f"Abendessen basierend auf deiner Frühstücks- und Mittagsauswahl ({day}):", matching_dinner, key=f"dinner_{day}")
-            elif starting_meal == "Abend":
-                selected_dinner = st.selectbox(f"Wähle ein Abendessen für {day}", data['Abend'].unique(), key=f"dinner_{day}")
-                matching_lunch = data[data['Abend'] == selected_dinner]['Mittag'].unique()
-                selected_lunch = st.selectbox(f"Mittagessen basierend auf deiner Abendauswahl ({day}):", matching_lunch, key=f"lunch_{day}")
-                matching_breakfast = data[(data['Abend'] == selected_dinner) & (data['Mittag'] == selected_lunch)]['Frühstück'].unique()
-                selected_breakfast = st.selectbox(f"Frühstück basierend auf deiner Mittag- und Abendauswahl ({day}):", matching_breakfast, key=f"breakfast_{day}")
+        auto_plan[day] = day_plan
 
-            weekly_plan[day] = {
-                'Frühstück': selected_breakfast,
-                'Mittag': selected_lunch,
-                'Abend': selected_dinner
-            }
+    st.write("## Automatisch erstellter Wochenplan")
+    for day, meals in auto_plan.items():
+        st.write(f"### {day}")
+        st.write(f"- **Frühstück:** {meals['Frühstück']}")
+        st.write(f"- **Mittag:** {meals['Mittag']}")
+        st.write(f"- **Abend:** {meals['Abend']}")
 
-    # Warnung, wenn eine Mahlzeit mehr als 2-mal ausgewählt wurde
-    all_selected_meals = [meal for day_meals in weekly_plan.values() for meal in day_meals.values() if meal]
-    meal_counts = pd.Series(all_selected_meals).value_counts()
-    repeated_meals = meal_counts[meal_counts > 2]
-    if not repeated_meals.empty:
-        st.warning("Folgende Mahlzeiten wurden mehr als 2-mal in der Woche ausgewählt und sollten reduziert werden:")
-        for meal, count in repeated_meals.items():
-            st.write(f"- {meal}: {count}x")
 
-    # Automatischen Wochenplan generieren
-    if st.button("Automatischen Wochenplan erstellen"):
-        auto_plan = {}
-        available_meals = data.copy()
+def display_monthly_plan():
+    days_in_month = 30
+    auto_month_plan = {}
+    available_meals = data.copy()
 
-        for day in days:
-            day_plan = {}
-            for meal_type in ['Frühstück', 'Mittag', 'Abend']:
-                remaining_meals = available_meals[meal_type][~available_meals[meal_type].isin(used_meals)].unique()
-                if len(remaining_meals) == 0:
-                    st.error(f"Nicht genügend verfügbare {meal_type} Optionen für {day}.")
-                    return
+    st.write("## Automatischen Monatsplan erstellen")
+    for day in range(1, days_in_month + 1):
+        day_plan = {}
+        for meal_type in ['Frühstück', 'Mittag', 'Abend']:
+            remaining_meals = available_meals[meal_type][~available_meals[meal_type].isin(used_meals)].unique()
+            if len(remaining_meals) == 0:
+                st.error(f"Nicht genügend verfügbare {meal_type} Optionen für Tag {day}.")
+                return
 
-                selected_meal = random.choice(remaining_meals)
-                day_plan[meal_type] = selected_meal
+            selected_meal = random.choice(remaining_meals)
+            day_plan[meal_type] = selected_meal
 
-                # Mahlzeit als verwendet markieren
-                used_meals.add(selected_meal)
+            # Mahlzeit als verwendet markieren
+            used_meals.add(selected_meal)
 
-                # Sicherstellen, dass maximal 2 Tage hintereinander gleiche Mahlzeiten gewählt werden
-                if len(used_meals) > 7:
-                    used_meals.pop()
+            # Sicherstellen, dass maximal 2 Tage hintereinander gleiche Mahlzeiten gewählt werden
+            if len(used_meals) > 7:
+                used_meals.pop()
 
-            auto_plan[day] = day_plan
+        auto_month_plan[f"Tag {day}"] = day_plan
 
-        st.write("## Automatisch erstellter Wochenplan")
-        for day, meals in auto_plan.items():
-            st.write(f"### {day}")
-            st.write(f"- **Frühstück:** {meals['Frühstück']}")
-            st.write(f"- **Mittag:** {meals['Mittag']}")
-            st.write(f"- **Abend:** {meals['Abend']}")
-
-    # Automatischen Monatsplan generieren
-    if st.button("Automatischen Monatsplan erstellen"):
-        days_in_month = 30
-        auto_month_plan = {}
-        available_meals = data.copy()
-
-        for day in range(1, days_in_month + 1):
-            day_plan = {}
-            for meal_type in ['Frühstück', 'Mittag', 'Abend']:
-                remaining_meals = available_meals[meal_type][~available_meals[meal_type].isin(used_meals)].unique()
-                if len(remaining_meals) == 0:
-                    st.error(f"Nicht genügend verfügbare {meal_type} Optionen für Tag {day}.")
-                    return
-
-                selected_meal = random.choice(remaining_meals)
-                day_plan[meal_type] = selected_meal
-
-                # Mahlzeit als verwendet markieren
-                used_meals.add(selected_meal)
-
-                # Sicherstellen, dass maximal 2 Tage hintereinander gleiche Mahlzeiten gewählt werden
-                if len(used_meals) > 7:
-                    used_meals.pop()
-
-            auto_month_plan[f"Tag {day}"] = day_plan
-
-        st.write("## Automatisch erstellter Monatsplan")
-        for day, meals in auto_month_plan.items():
-            st.write(f"### {day}")
-            st.write(f"- **Frühstück:** {meals['Frühstück']}")
-            st.write(f"- **Mittag:** {meals['Mittag']}")
-            st.write(f"- **Abend:** {meals['Abend']}")
-
-    # Wochenplan anzeigen
-    if st.button("Wochenplan anzeigen"):
-        st.write("## Dein Wochenplan (Druckversion)")
-        for day, meals in weekly_plan.items():
-            st.write(f"### {day}")
-            st.write(f"- **Frühstück:** {meals['Frühstück']}")
-            st.write(f"- **Mittag:** {meals['Mittag']}")
-            st.write(f"- **Abend:** {meals['Abend']}")
+    st.write("## Automatisch erstellter Monatsplan")
+    for day, meals in auto_month_plan.items():
+        st.write(f"### {day}")
+        st.write(f"- **Frühstück:** {meals['Frühstück']}")
+        st.write(f"- **Mittag:** {meals['Mittag']}")
+        st.write(f"- **Abend:** {meals['Abend']}")
 
 if __name__ == "__main__":
     main()
